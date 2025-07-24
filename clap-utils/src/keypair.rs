@@ -399,12 +399,17 @@ const SIGNER_SOURCE_USB: &str = "usb";
 const SIGNER_SOURCE_STDIN: &str = "stdin";
 const SIGNER_SOURCE_PUBKEY: &str = "pubkey";
 
+#[cfg(feature = "fireblocks")]
+const SIGNER_SOURCE_FIREBLOCKS: &str = "fireblocks";
+
 pub(crate) enum SignerSourceKind {
     Prompt,
     Filepath(String),
     Usb(RemoteWalletLocator),
     Stdin,
     Pubkey(Pubkey),
+    #[cfg(feature = "fireblocks")]
+    Fireblocks(String),
 }
 
 impl AsRef<str> for SignerSourceKind {
@@ -415,6 +420,8 @@ impl AsRef<str> for SignerSourceKind {
             Self::Usb(_) => SIGNER_SOURCE_USB,
             Self::Stdin => SIGNER_SOURCE_STDIN,
             Self::Pubkey(_) => SIGNER_SOURCE_PUBKEY,
+            #[cfg(feature = "fireblocks")]
+            Self::Fireblocks(_) => SIGNER_SOURCE_FIREBLOCKS,
         }
     }
 }
@@ -481,6 +488,13 @@ pub(crate) fn parse_signer_source<S: AsRef<str>>(
                         legacy: false,
                     }),
                     SIGNER_SOURCE_STDIN => Ok(SignerSource::new(SignerSourceKind::Stdin)),
+                    #[cfg(feature = "fireblocks")]
+                    SIGNER_SOURCE_FIREBLOCKS => {
+                        Ok(SignerSource::new(SignerSourceKind::Fireblocks(
+                            uri.host()
+                                .map_or_else(|| String::from("default"), |h| h.to_string()),
+                        )))
+                    }
                     _ => {
                         #[cfg(target_family = "windows")]
                         // On Windows, an absolute path's drive letter will be parsed as the URI
@@ -812,7 +826,11 @@ pub fn signer_from_path_with_config(
                 )
                 .into())
             }
-        }
+        },
+        #[cfg(feature = "fireblocks")]
+        SignerSourceKind::Fireblocks(profile) => {
+            Ok(Box::new(fireblocks_solana_signer::FireblocksSigner::try_from_config(&[profile], |tx| log::info!("{tx}"))?))
+        },
     }
 }
 
@@ -1269,6 +1287,23 @@ mod tests {
                 derivation_path: None,
                 legacy: false,
             } if p == relative_path_str)
+        );
+
+        #[cfg(feature = "fireblocks")]
+        assert!(
+            matches!(parse_signer_source("fireblocks://default".to_string()).unwrap(), SignerSource {
+                kind: SignerSourceKind::Fireblocks(p),
+                derivation_path: None,
+                legacy: false,
+            } if p == "default")
+        );
+        #[cfg(feature = "fireblocks")]
+        assert!(
+            matches!(parse_signer_source("fireblocks://sandbox".to_string()).unwrap(), SignerSource {
+                kind: SignerSourceKind::Fireblocks(p),
+                derivation_path: None,
+                legacy: false,
+            } if p == "sandbox")
         );
     }
 
