@@ -141,6 +141,7 @@ members = [
     "zk-keygen",
     "zk-sdk",
     "zk-token-sdk",
+    "fireblocks-solana-signer"
 ]
 
 exclude = ["programs/sbf", "svm/examples", "svm/tests/example-programs"]
@@ -256,6 +257,10 @@ env_logger = "0.9.3"
 etcd-client = "0.11.1"
 fast-math = "0.1"
 fd-lock = "3.0.13"
+fireblocks-solana-signer = { path = "./fireblocks-solana-signer", features = [
+    "config",
+    "agave",
+] }
 five8_const = "0.1.4"
 flate2 = "1.0.31"
 fnv = "1.0.7"

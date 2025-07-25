@@ -692,7 +692,11 @@ pub fn signer_from_source_with_config(
                 )
                 .into())
             }
-        }
+        },
+        #[cfg(feature = "fireblocks")]
+        SignerSourceKind::Fireblocks(profile) => {
+            Ok(Box::new(fireblocks_solana_signer::FireblocksSigner::try_from_config(&[profile], |tx| log::info!("{tx}"))?))
+        },
     }
 }
 
@@ -824,6 +828,14 @@ pub fn resolve_signer_from_source(
             }
         }
         SignerSourceKind::Pubkey(pubkey) => Ok(Some(pubkey.to_string())),
+        #[cfg(feature = "fireblocks")]
+        SignerSourceKind::Fireblocks(profile) => Ok(Some(
+            fireblocks_solana_signer::FireblocksSigner::try_from_config(&[profile], |tx| {
+                log::info!("{tx}")
+            })?
+            .pubkey()
+            .to_string(),
+        )),
     }
 }
 

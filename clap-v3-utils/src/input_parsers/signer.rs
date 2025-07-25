@@ -23,6 +23,8 @@ const SIGNER_SOURCE_FILEPATH: &str = "file";
 const SIGNER_SOURCE_USB: &str = "usb";
 const SIGNER_SOURCE_STDIN: &str = "stdin";
 const SIGNER_SOURCE_PUBKEY: &str = "pubkey";
+#[cfg(feature = "fireblocks")]
+const SIGNER_SOURCE_FIREBLOCKS: &str = "fireblocks";
 
 #[derive(Debug, Error)]
 pub enum SignerSourceError {
@@ -45,6 +47,8 @@ pub enum SignerSourceKind {
     Usb(RemoteWalletLocator),
     Stdin,
     Pubkey(Pubkey),
+    #[cfg(feature = "fireblocks")]
+    Fireblocks(String),
 }
 
 impl AsRef<str> for SignerSourceKind {
@@ -55,6 +59,8 @@ impl AsRef<str> for SignerSourceKind {
             Self::Usb(_) => SIGNER_SOURCE_USB,
             Self::Stdin => SIGNER_SOURCE_STDIN,
             Self::Pubkey(_) => SIGNER_SOURCE_PUBKEY,
+            #[cfg(feature = "fireblocks")]
+            Self::Fireblocks(_) => SIGNER_SOURCE_FIREBLOCKS,
         }
     }
 }
@@ -237,6 +243,13 @@ impl SignerSource {
                             legacy: false,
                         }),
                         SIGNER_SOURCE_STDIN => Ok(SignerSource::new(SignerSourceKind::Stdin)),
+                        #[cfg(feature = "fireblocks")]
+                        SIGNER_SOURCE_FIREBLOCKS => {
+                            Ok(SignerSource::new(SignerSourceKind::Fireblocks(
+                                uri.host()
+                                    .map_or_else(|| String::from("default"), |h| h.to_string()),
+                            )))
+                        }
                         _ => {
                             #[cfg(target_family = "windows")]
                             // On Windows, an absolute path's drive letter will be parsed as the URI
@@ -331,6 +344,8 @@ impl SignerSourceParserBuilder {
                     SignerSourceKind::Usb(_) if self.allow_usb => Ok(signer_source),
                     SignerSourceKind::Stdin if self.allow_stdin => Ok(signer_source),
                     SignerSourceKind::Pubkey(_) if self.allow_pubkey => Ok(signer_source),
+                    #[cfg(feature = "fireblocks")]
+                    SignerSourceKind::Fireblocks(_) => Ok(signer_source),
                     _ => Err(SignerSourceError::UnsupportedSource),
                 }
             },
@@ -655,6 +670,23 @@ mod tests {
                 derivation_path: None,
                 legacy: false,
             } if p == relative_path_str)
+        );
+
+        #[cfg(feature = "fireblocks")]
+        assert!(
+            matches!(SignerSource::parse("fireblocks://default".to_string()).unwrap(), SignerSource {
+                        kind: SignerSourceKind::Fireblocks(p),
+                        derivation_path: None,
+                        legacy: false,
+                    } if p == "default")
+        );
+        #[cfg(feature = "fireblocks")]
+        assert!(
+            matches!(SignerSource::parse("fireblocks://sandbox".to_string()).unwrap(), SignerSource {
+                        kind: SignerSourceKind::Fireblocks(p),
+                        derivation_path: None,
+                        legacy: false,
+                    } if p == "sandbox")
         );
     }
 

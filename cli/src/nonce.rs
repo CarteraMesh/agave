@@ -429,6 +429,8 @@ pub fn process_authorize_nonce_account(
     let mut message = Message::new(&ixs, Some(&config.signers[0].pubkey()));
     simulate_and_update_compute_unit_limit(&compute_unit_limit, rpc_client, &mut message)?;
     let mut tx = Transaction::new_unsigned(message);
+    #[cfg(feature = "fireblocks")]
+    crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, latest_blockhash);
     tx.try_sign(&config.signers, latest_blockhash)?;
 
     check_account_for_fee_with_commitment(
@@ -540,6 +542,8 @@ pub fn process_create_nonce_account(
     }
 
     let mut tx = Transaction::new_unsigned(message);
+    #[cfg(feature = "fireblocks")]
+    crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, latest_blockhash);
     tx.try_sign(&config.signers, latest_blockhash)?;
     let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
         &tx,
@@ -598,6 +602,8 @@ pub fn process_new_nonce(
     let mut message = Message::new(&ixs, Some(&config.signers[0].pubkey()));
     simulate_and_update_compute_unit_limit(&compute_unit_limit, rpc_client, &mut message)?;
     let mut tx = Transaction::new_unsigned(message);
+    #[cfg(feature = "fireblocks")]
+    crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, latest_blockhash);
     tx.try_sign(&config.signers, latest_blockhash)?;
     check_account_for_fee_with_commitment(
         rpc_client,
@@ -672,6 +678,8 @@ pub fn process_withdraw_from_nonce_account(
     let mut message = Message::new(&ixs, Some(&config.signers[0].pubkey()));
     simulate_and_update_compute_unit_limit(&compute_unit_limit, rpc_client, &mut message)?;
     let mut tx = Transaction::new_unsigned(message);
+    #[cfg(feature = "fireblocks")]
+    crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, latest_blockhash);
     tx.try_sign(&config.signers, latest_blockhash)?;
     check_account_for_fee_with_commitment(
         rpc_client,
@@ -706,6 +714,8 @@ pub(crate) fn process_upgrade_nonce_account(
     let mut message = Message::new(&ixs, Some(&config.signers[0].pubkey()));
     simulate_and_update_compute_unit_limit(&compute_unit_limit, rpc_client, &mut message)?;
     let mut tx = Transaction::new_unsigned(message);
+    #[cfg(feature = "fireblocks")]
+    crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, latest_blockhash);
     tx.try_sign(&config.signers, latest_blockhash)?;
     check_account_for_fee_with_commitment(
         rpc_client,

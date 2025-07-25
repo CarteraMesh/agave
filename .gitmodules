@@ -1,0 +1,4 @@
+[submodule "fireblocks-solana-signer"]
+	path = fireblocks-solana-signer
+	url = https://github.com/CarteraMesh/fireblocks-solana-signer.git
+	branch = agave
