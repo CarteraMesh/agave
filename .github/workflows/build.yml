@@ -1,0 +1,75 @@
+permissions:
+  contents: read
+
+env:
+  RPC_URL: ${{ secrets.RPC_URL }}
+  RUST_LOG: "info,fireblocks_solana_signer=debug"
+  FIREBLOCKS_ENDPOINT: https://sandbox-api.fireblocks.io
+  FIREBLOCKS_POLL_TIMEOUT: "15"
+  FIREBLOCKS_POLL_INTERVAL: "3"
+  FIREBLOCKS_DEVNET: "true"
+  FIREBLOCKS_VAULT: "0"
+on:
+  workflow_dispatch:
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+name: build
+jobs:
+  build:
+    runs-on: ${{ vars.RUNNER }}
+    name: build cli
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+          cache-all-crates: "true"
+          cache-workspace-crates: "true"
+          workspaces: |
+            . -> target
+            clap-utils -> target
+            cli -> target
+            cli-config -> target
+      - name: install deps
+        run: |
+          sudo apt-get install -y libgpgme-dev libhidapi-dev libudev-dev
+      - name: Generate config
+        run: |
+          mkdir -p ~/.config/solana/cli ~/.config/fireblocks
+          echo "${{ secrets.FIREBLOCKS_SECRET }}" > ~/sandbox.pem
+          cat > ~/.config/fireblocks/default.toml <<EOF
+          api_key = "${{ secrets.FIREBLOCKS_API_KEY }}"
+          secret_path = "~/sandbox.pem"
+          url = "https://sandbox-api.fireblocks.io"
+          [display]
+          output = "Table"
+          [signer]
+          poll_timeout = 120
+          poll_interval = 5
+          vault = "$FIREBLOCKS_VAULT"
+          EOF
+
+          cp ~/.config/fireblocks/default.toml ~/.config/fireblocks/sandbox.toml
+          cat > ~/.config/solana/cli/config.yml <<EOF
+          ---
+          keypair_path: "fireblocks://default"
+          websocket_url: "wss://api.devnet.solana.com"
+          commitment: finalized
+          EOF
+          echo "json_rpc_url: $RPC_URL" >> ~/.config/solana/cli/config.yml
+          echo "[142,66,83,178,186,150,12,117,220,68,184,164,196,191,93,214,80,246,160,55,81,158,122,197,73,49,97,86,229,65,96,235,101,155,178,255,13,45,251,194,5,242,23,233,109,19,157,253,56,175,36,184,43,68,233,90,44,76,24,205,176,2,213,130]" > ~/.config/solana/id.json
+      - name: test
+        run: |
+          cargo test -p solana-clap-utils --lib --tests  --features fireblocks -- --nocapture
+      - name: cargo build solana cli
+        run: |
+          cargo build -p solana-cli --features fireblocks
+      - name: transfer
+        run: |
+          target/debug/solana transfer --with-memo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"  215r9xfTFVYcE9g3fAUGowauM84egyUvFCbSo3LKNaep 0.001

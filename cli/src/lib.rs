@@ -40,3 +40,5 @@ pub mod test_utils;
 pub mod validator_info;
 pub mod vote;
 pub mod wallet;
+#[cfg(feature = "fireblocks")]
+pub mod fireblocks;
