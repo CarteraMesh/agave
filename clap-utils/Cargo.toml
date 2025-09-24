@@ -14,6 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [features]
 fireblocks = ["fireblocks-solana-signer", "log"]
+gpg = ["fireblocks-solana-signer/gpg"]
 [lib]
 name = "solana_clap_utils"
 

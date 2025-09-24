@@ -11,6 +11,7 @@ edition = { workspace = true }
 
 [features]
 fireblocks = ["solana-clap-utils/fireblocks"]
+gpg = ["solana-clap-utils/gpg"]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
