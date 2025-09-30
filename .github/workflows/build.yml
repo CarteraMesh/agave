@@ -1,0 +1,54 @@
+permissions:
+  contents: read
+
+env:
+  RPC_URL: ${{ secrets.RPC_URL }}
+  RUST_LOG: "info,fireblocks_solana_signer=debug"
+  FIREBLOCKS_ENDPOINT: https://sandbox-api.fireblocks.io
+  FIREBLOCKS_POLL_TIMEOUT: "15"
+  FIREBLOCKS_POLL_INTERVAL: "3"
+  FIREBLOCKS_DEVNET: "true"
+  FIREBLOCKS_VAULT: "0"
+on:
+  workflow_dispatch:
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+name: build
+jobs:
+  build:
+    runs-on: ${{ vars.RUNNER }}
+    name: build cli
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: ubicloud/rust-cache@v2 
+        with:
+          cache-on-failure: "true"
+          cache-all-crates: "true"
+          workspaces: |
+            . -> target
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: install deps
+        run: |
+          sudo apt-get install -y libgpgme-dev libhidapi-dev libudev-dev
+      - uses: CarteraMesh/fireblocks-config-action@v1
+        with:
+          fireblocks-secret: |
+            ${{ secrets.FIREBLOCKS_SECRET }}
+          fireblocks-api-key: ${{ secrets.FIREBLOCKS_API_KEY }}
+      - name: test clap-utils
+        run: |
+          cargo test -p solana-clap-utils --lib --tests  --features fireblocks -- --nocapture
+      - name: test clap-v3-utils
+        run: |
+          cargo test -p solana-clap-v3-utils --lib --tests  --features fireblocks -- --nocapture
+      - name: cargo build solana cli
+        run: |
+          cargo build -p solana-cli --features fireblocks
+      - name: transfer
+        run: |
+          target/debug/solana transfer --with-memo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"  215r9xfTFVYcE9g3fAUGowauM84egyUvFCbSo3LKNaep 0.001

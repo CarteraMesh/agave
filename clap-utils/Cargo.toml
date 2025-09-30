@@ -12,12 +12,20 @@ edition = { workspace = true }
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
+[features]
+fireblocks = ["fireblocks-solana-signer", "log"]
+gpg = ["fireblocks-solana-signer/gpg"]
 [lib]
 name = "solana_clap_utils"
 
 [dependencies]
 chrono = { workspace = true, features = ["default"] }
 clap = "2.33.0"
+fireblocks-solana-signer = { workspace = true, features = [
+    "config",
+    "agave",
+], optional = true }
+log = { workspace = true, optional = true }
 rpassword = { workspace = true }
 solana-clock = { workspace = true }
 solana-cluster-type = { workspace = true }
