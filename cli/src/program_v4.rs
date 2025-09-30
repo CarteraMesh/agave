@@ -1177,12 +1177,6 @@ fn send_messages(
             })
             .collect::<Vec<_>>();
         let mut tx = Transaction::new_unsigned(message);
-        #[cfg(feature = "fireblocks")]
-        if config.keypair_path.contains("fireblocks") {
-            return crate::fireblocks::try_sign(tx, &rpc_client, &config, blockhash)
-                .map_err(|err| format!("Failed to send message: {err}").into())
-                .map(|_| String::new());
-        }
         tx.try_sign(&signers, blockhash)?;
         if additional_cli_config.sign_only {
             return_signers_with_config(

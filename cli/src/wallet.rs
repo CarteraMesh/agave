@@ -981,8 +981,6 @@ pub fn process_transfer(
             check_nonce_account(&nonce_account, &nonce_authority.pubkey(), &recent_blockhash)?;
         }
 
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, &rpc_client, &config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         let result = if no_wait {
             rpc_client.send_transaction_with_config(&tx, config.send_transaction_config)

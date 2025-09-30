@@ -935,8 +935,6 @@ pub fn process_create_vote_account(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
             &tx,
@@ -1066,8 +1064,6 @@ pub fn process_vote_authorize(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, &rpc_client, &config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -1156,8 +1152,6 @@ pub fn process_vote_update_validator(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, &rpc_client, &config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -1239,8 +1233,6 @@ pub fn process_vote_update_commission(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -1463,8 +1455,6 @@ pub fn process_withdraw_from_vote_account(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -1541,8 +1531,6 @@ pub fn process_close_vote_account(
     let mut message = Message::new(&ixs, Some(&fee_payer.pubkey()));
     simulate_and_update_compute_unit_limit(&compute_unit_limit, rpc_client, &mut message)?;
     let mut tx = Transaction::new_unsigned(message);
-    #[cfg(feature = "fireblocks")]
-    crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, latest_blockhash);
     tx.try_sign(&config.signers, latest_blockhash)?;
     check_account_for_fee_with_commitment(
         rpc_client,

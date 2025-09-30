@@ -559,24 +559,7 @@ fn process_create_lookup_table(
     ));
 
     let keypairs: Vec<&dyn Signer> = vec![config.signers[0], payer_signer];
-    #[cfg(feature = "fireblocks")]
-    let result = if config.keypair_path.contains("fireblocks") {
-        crate::fireblocks::try_sign(tx, &rpc_client, &config, blockhash)
-    } else {
-        tx.try_sign(&keypairs, blockhash)?;
-        rpc_client.send_and_confirm_transaction_with_spinner_and_config(
-            &tx,
-            config.commitment,
-            RpcSendTransactionConfig {
-                skip_preflight: false,
-                preflight_commitment: Some(config.commitment.commitment),
-                ..RpcSendTransactionConfig::default()
-            },
-        )
-    };
-    #[cfg(not(feature = "fireblocks"))]
     tx.try_sign(&keypairs, blockhash)?;
-    #[cfg(not(feature = "fireblocks"))]
     let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
         &tx,
         config.commitment,
@@ -635,24 +618,8 @@ fn process_freeze_lookup_table(
         &[freeze_lookup_table_ix],
         Some(&config.signers[0].pubkey()),
     ));
-    #[cfg(feature = "fireblocks")]
-    let result = if config.keypair_path.contains("fireblocks") {
-        crate::fireblocks::try_sign(tx, &rpc_client, &config, blockhash)
-    } else {
-        tx.try_sign(&[config.signers[0], authority_signer], blockhash)?;
-        rpc_client.send_and_confirm_transaction_with_spinner_and_config(
-            &tx,
-            config.commitment,
-            RpcSendTransactionConfig {
-                skip_preflight: false,
-                preflight_commitment: Some(config.commitment.commitment),
-                ..RpcSendTransactionConfig::default()
-            },
-        )
-    };
-    #[cfg(not(feature = "fireblocks"))]
+
     tx.try_sign(&[config.signers[0], authority_signer], blockhash)?;
-    #[cfg(not(feature = "fireblocks"))]
     let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
         &tx,
         config.commitment,
@@ -713,24 +680,7 @@ fn process_extend_lookup_table(
         Some(&config.signers[0].pubkey()),
     ));
 
-    #[cfg(feature = "fireblocks")]
-    let result = if config.keypair_path.contains("fireblocks") {
-        crate::fireblocks::try_sign(tx, &rpc_client, &config, blockhash)
-    } else {
-        tx.try_sign(&[config.signers[0], authority_signer], blockhash)?;
-        rpc_client.send_and_confirm_transaction_with_spinner_and_config(
-            &tx,
-            config.commitment,
-            RpcSendTransactionConfig {
-                skip_preflight: false,
-                preflight_commitment: Some(config.commitment.commitment),
-                ..RpcSendTransactionConfig::default()
-            },
-        )
-    };
-    #[cfg(not(feature = "fireblocks"))]
     tx.try_sign(&[config.signers[0], authority_signer], blockhash)?;
-    #[cfg(not(feature = "fireblocks"))]
     let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
         &tx,
         config.commitment,

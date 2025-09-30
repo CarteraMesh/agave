@@ -1526,8 +1526,6 @@ pub fn process_create_stake_account(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         let result = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
             &tx,
@@ -1658,8 +1656,6 @@ pub fn process_stake_authorize(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -1815,8 +1811,6 @@ pub fn process_deactivate_stake_account(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -1928,8 +1922,6 @@ pub fn process_withdraw_stake(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -2124,8 +2116,6 @@ pub fn process_split_stake(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -2244,8 +2234,6 @@ pub fn process_merge_stake(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -2349,8 +2337,6 @@ pub fn process_stake_set_lockup(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
@@ -2860,8 +2846,6 @@ pub fn process_delegate_stake(
             },
         )
     } else {
-        #[cfg(feature = "fireblocks")]
-        crate::fireblocks::try_fireblocks_sign!(tx, rpc_client, config, recent_blockhash);
         tx.try_sign(&config.signers, recent_blockhash)?;
         if let Some(nonce_account) = &nonce_account {
             let nonce_account = solana_rpc_client_nonce_utils::get_account_with_commitment(
